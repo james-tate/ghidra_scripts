@@ -1,0 +1,30 @@
+from ghidra.program.model.symbol import RefType
+
+changefunc = getFunctionContaining(currentAddress)
+functionStart = changefunc.getEntryPoint()
+
+refs = getReferencesTo(functionStart)
+
+func = getFirstFunction()
+funcList = []
+
+while func != None:
+	funcList.append(func)
+	func = getFunctionAfter(func)
+
+replace = askChoice("pick func", "pick", funcList, None)
+
+replaceAddr = replace.getEntryPoint()
+
+bl = 0x48000001
+
+for ref in refs:
+	rftype = ref.getReferenceType()
+	if rftype != RefType.DATA and rftype != RefType.EXTERNAL_REF:
+		callAddr = ref.getFromAddress()
+		offset =replaceAddr.subtract(callAddr)
+		start()
+		clearListing(callAddr)
+		setInt(callAddr, (offset | bl))
+		disassemble(callAddr)
+		end(True)
